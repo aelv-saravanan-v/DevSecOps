@@ -38,7 +38,8 @@ start_server() {
   
   # Start the server using the appropriate sh script
   echo 'nohup $STERLING_DIR/bin/$script_name $server_name \"$jvm_heapsize\" > "$LOG_DIR/TD_$server_name.log" 2>&1 &'
-  nohup $STERLING_DIR/bin/$script_name $server_name \"$jvm_heapsize\" > "$LOG_DIR/TD_$server_name.log" 2>&1 &
+  echo 'nohup "$STERLING_DIR/bin/$script_name" "$server_name" \""$jvm_heapsize"\" > "$LOG_DIR/TD_$server_name.log" 2>&1 &'
+  echo 'nohup $STERLING_DIR/bin/$script_name $server_name "$jvm_heapsize" > "$LOG_DIR/TD_$server_name.log" 2>&1 &'
   sleep 14  # Adjust sleep duration as needed
 }
 
