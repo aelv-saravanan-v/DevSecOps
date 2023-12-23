@@ -1,109 +1,104 @@
 #!/bin/bash
-#######################################################################################
-# Source the Server List file
-source DEVOMSagntintgServerList.sh
-STERLING_DIR="/opt/IBM/OMS95"
-LOG_DIR="/var/IBM/OMS95/logs"
-#######################################################################################
-if [ ! -d "$LOG_DIR" ]; then
-    mkdir -p "$LOG_DIR"
-fi
-# Function to start a server with a given server name, server type, and JVM heap size
-start_server() {
-  server_name="$1"
-  server_type=""
-  jvm_heapsize=""
 
-# Identify the server type based on the server name
-  if [ -n "${agentserver[$server_name]}" ]; then
-    server_type="agent"
-    jvm_heapsize="${agentserver[$server_name]}"
-  elif [ -n "${integrationserver[$server_name]}" ]; then
-    server_type="integration"
-    jvm_heapsize="${integrationserver[$server_name]}"
-  else
-    echo "Error: Server $server_name not found in any server list."
-    return
-  fi
+# List of Agents, Interations,
 
-  echo "Starting an $server_type server: $server_name with JVM heap size: $jvm_heapsize"
-  
-  # Determine the script name based on the server type
-  script_name=""
-  if [ "$server_type" == "agent" ]; then
-    script_name="agentserver_dmart.sh"
-  elif [ "$server_type" == "integration" ]; then
-    script_name="startIntegrationServer_dmart.sh"
-  fi
-  
-  # Start the server using the appropriate sh script
-  nohup "$STERLING_DIR/bin/$script_name" "$server_name" \""$jvm_heapsize"\" > "$LOG_DIR/TD_$server_name.log" 2>&1 &
-  sleep 14  # Adjust sleep duration as needed
-}
+declare -A agentserver=(
+    ["AEL_Critical_Fulfillment"]="-Xms1024m -Xmx2048m"
+    ["AEL_Critical_TO_Order_Fulfillment"]="-Xms1024m -Xmx1536m"
+    ["AEL_Critical_SO_Order_Fulfillment"]="-Xms1024m -Xmx1536m"
+    ["AEL_Critical_Reservation_Purge"]="-Xms512m -Xmx1024m"
+    #["RealTimeCapacityAgent"]="-Xms512m -Xmx1024m"
+    #["AELSlotFullSync"]="-Xms512m -Xmx1024m"
+    ["PurgeSlotAlert"]="-Xms512m -Xmx1024m"
+    ["AEL_ConsolidateToShipKafka"]="-Xms1024m -Xmx2048m"
+    #["AEL_ORDER_RELEASE_STATUS_PURGE"]="-Xms1024m -Xmx1536m"
+    ["AEL_SapFeed_AS"]="-Xms512m -Xmx1024m"
+    ["AEL_GenerateSapFdCSV"]="-Xms512m -Xmx1024m"
+    ["AEL_AdvanceFeed"]="-Xms512m -Xmx1024m"
+    ["AEL_GenerateCSVAdvFeed"]="-Xms512m -Xmx1024m"
+    ["AEL_SAPInvoiceFeed"]="-Xms512m -Xmx1024m"
+    ["AEL_SAPSTOCSVFd"]="-Xms512m -Xmx1024m"
+    #["AEL_SapFeed_AS"]="-Xms512m -Xmx1024m"
+    ["OMS_TO_MONITOR"]="-Xms512m -Xmx1024m"
+    ["AEL_CreateReturnPostHoc"]="-Xms512m -Xmx1024m"
+    ["AEL_PaymentCollection"]="-Xms1024m -Xmx2048m"
+    ["AEL_PaymentExecution"]="-Xms1024m -Xmx2048m"
+    ["AEL_LEADTIME_HOLD_PROCESS_AS"]="-Xms512m -Xmx1024m"
+    ["AEL_SEND_INVOICE"]="-Xms512m -Xmx1024m"
+    ["AEL_REPROCESS_MESSAGE"]="-Xms512m -Xmx1024m"
+    ["AEL_TO_SendToNode"]="-Xms512m -Xmx1024m"
+    ["AEL_RTAMAgentOP1"]="-Xms512m -Xmx1024m"
+    ["AEL_TO_ConsolidateToShipment_AS"]="-Xms512m -Xmx1024m"
+    ["AEL_TO_ReleaseOrder_AS"]="-Xms512m -Xmx1024m"
+    ["AEL_MinimaxReturnReceive_AS"]="-Xms512m -Xmx1024m"
+    # Add more server here as needed ["ServerName"]="JVM HeapSize"
+)
 
-# Function to start all servers of a given server type
-start_all_servers() {
-    case "$1" in
-        "agentserver")
-            for server_name in "${!agentserver[@]}"; do
-                start_server "$server_name"
-            done
-            ;;
-        "integrationserver")
-            for server_name in "${!integrationserver[@]}"; do
-                start_server "$server_name"
-            done
-            ;;
-        *)
-            echo "Please mention a Server List"
-            ;;
-    esac
-}
-
-# Function to start the HealthMonitor
-start_health_monitor() {
-  server_name=$1
-  echo "Starting Health Monitor server: $server_name"
-  nohup $STERLING_DIR/bin/startHealthMonitor.sh > "$LOG_DIR/logs/TD_$server_name.log" 2>&1 &
-  sleep 10  # Adjust sleep duration as needed
-}
-
-case "$1" in
-  "ALL")
-    # Function to check Java process count
-    check_java_process() {
-        local count=$(pgrep -c java)
-        echo "$count"
-    }
-    # Check Java process count
-    java_process_count=$(check_java_process)
-    echo "Java process count: $java_process_count"
-    if [ "$java_process_count" -eq 0 ]; then
-        echo "No Java processes are running. Starting the servers..."
-        # Start servers for "integrationserver"
-        start_all_servers "integrationserver" &&
-        # Start health monitor for "HealthMonitor"
-        start_health_monitor "HealthMonitor" &&
-        # Start servers for "agentserver"
-        start_all_servers "agentserver"
-    else
-        echo "Java processes are already running. Servers will not be started."
-    fi
-    ;;
-  "Agents")
-    start_all_servers "agentserver"
-    ;;
-  "Intgs")
-    start_all_servers "integrationserver"
-    ;;
-  "HealthMonitor")
-    start_health_monitor "HealthMonitor"
-    ;;
-  *)
-    if [ -z "$1" ]; then
-      echo "Please provide a valid server name or 'ALL' or 'Agents' or 'Intgs' or 'HealthMonitor'"
-    else
-      start_server "$1"
-    fi
-    ;;
-esac
+declare -A integrationserver=(
+    ["AEL_BillDesk"]="-Xms512m -Xmx2048m"
+    ["SCWC_Critical_createOrder"]="-Xms1024m -Xmx3072m"
+    ["AEL_Critical_AdjustInventory"]="-Xms512m -Xmx1024m"
+    ["AEL_Critical_InventoryAlerts"]="-Xms512m -Xmx1024m"
+    ["AEL_Critical_MRPUpdateToWCS"]="-Xms512m -Xmx1024m"
+    ["AEL_createItemServer"]="-Xms1024m -Xmx1536m"
+    ["AEL_FullInventorySync"]="-Xms1024m -Xmx1024m"
+    ["AEL_ReadEOF"]="-Xms512m -Xmx1024m"
+    ["AEL_Critical_Fulfillment"]="-Xms1024m -Xmx2048m"
+    ["AEL_Critical_ShipmentUpdateFromWMS"]="-Xms1536m -Xmx2048m"
+    ["AEL_Critical_ShipmentUpdateFromWMS_G1"]="-Xms1536m -Xmx2048m"
+    ["AEL_Critical_ShipmentUpdateFromWMS_G2"]="-Xms1536m -Xmx2048m"
+    ["AEL_Critical_ShipmentUpdateFromWMS_G3"]="-Xms1536m -Xmx2048m"
+    ["AEL_SAPItemCreateIntgServer"]="-Xms512m -Xmx1024m"
+    ["SCWC_SDF_pushInventoryMessages"]="-Xms1024m -Xmx1024m"
+    ["AEL_ReceiveOrder"]="-Xms512m -Xmx1024m"
+    ["AEL_WCSStatusUpdateServer"]="-Xms1024m -Xmx2048m"
+    ["AEL_Critical_Invoice"]="-Xms768m -Xmx1536m"
+    ["AEL_Critical_Invoice_G1"]="-Xms768m -Xmx1536m"
+    ["AEL_Critical_Invoice_G2"]="-Xms768m -Xmx1536m"
+    ["AEL_Critical_Invoice_G3"]="-Xms768m -Xmx1536m"
+    #["AEL_Critical_Misc_IS1"]="-Xms2048m -Xmx4096m"
+    ["AEL_Critical_DeliveryUpdate_IS1"]="-Xms1536m -Xmx3072m"
+    ["AEL_OrderDeliveryUpdate_IS"]="-Xms1024m -Xmx2048m"
+    ["AEL_ShipmentDeliveryUpdate_IS"]="-Xms1024m -Xmx2048m"
+    ["AEL_GSTVoucherAgent"]="-Xms1024m -Xmx2048m"
+    ["AEL_ProcessEmail"]="-Xms1024m -Xmx2048m"
+    ["AEL_MOMOrderEventRef"]="-Xms1024m -Xmx2048m"
+    ["AEL_MOMOrderEventRef_G1"]="-Xms1024m -Xmx2048m"
+    ["AEL_MOMOrderEventHandler"]="-Xms1024m -Xmx2048m"
+    ["AEL_OrderEventServer"]="-Xms1024m -Xmx1536m"
+    ["AEL_InventoryEventServer"]="-Xms768m -Xmx1024m"
+    ["AEL_PackEventServer"]="-Xms768m -Xmx1024m"
+    ["AEL_ROEventServer"]="-Xms1024m -Xmx2048m"
+    ["AEL_WMSPickPackUpdate_IS"]="-Xms1024m -Xmx2048m"
+    ["AEL_WMSPickPackUpdate_IS_G1"]="-Xms1024m -Xmx2048m"
+    ["AEL_DelaySMS"]="-Xms1024m -Xmx2048m"
+    ["AEL_supplyChangeEmailServer"]="-Xms512m -Xmx1024m"
+    ["AELPIP_CreateTOServer"]="-Xms512m -Xmx1024m"
+    ["AEL_PIP_Inti"]="-Xms512m -Xmx1024m"
+    ["AEL_BATCH_FLIP"]="-Xms512m -Xmx1024m"
+    ["AEL_PaymentInfo_Fd_IS"]="-Xms512m -Xmx1024m"
+    ["AEL_RevenueFd_IS"]="-Xms512m -Xmx1024m"
+    ["AEL_InvoiceFd_IS"]="-Xms512m -Xmx1024m"
+    ["AEL_SapFeed_IS"]="-Xms512m -Xmx1024m"
+    ["AEL_ROM"]="-Xms512m -Xmx1024m"
+    ["global_slot_reservation_async"]="-Xms1024m -Xmx2048m"
+    ["AEL_CLOSE_SHIPMENT"]="-Xms1024m -Xmx1536m"
+    ["AEL_ShortOrdInvoice_IS"]="-Xms1024m -Xmx1536m"
+    ["AEL_ReadyForCustPickup"]="-Xms1024m -Xmx1536m"
+    ["AEL_ROM_PICKEDUP"]="-Xms1024m -Xmx1536m"
+    ["AEL_HOLD_RESOLVE"]="-Xms1024m -Xmx1536m"
+    ["AEL_UnscheduleServer"]="-Xms1024m -Xmx1536m"
+    ["AEL_UpdateHeldInventory"]="-Xms1024m -Xmx2048m"
+    ["AEL_CosCancelOrder"]="-Xms1024m -Xmx2048m"
+    ["AEL_Critical_PaymentUpdate"]="-Xms1024m -Xmx2048m"
+    ["AEL_SapPoGrnCreateIntServer"]="-Xms1024m -Xmx1536m"
+    ["AEL_TO_ShipmentUpdate"]="-Xms512m -Xmx1536m"
+    ["AEL_TO_ConfirmShipment"]="-Xms512m -Xmx1536m"
+    ["AEL_TO_ReceiveOrder"]="-Xms512m -Xmx1536m"
+    ["AEL_AdjInvFromPOS_IS"]="-Xms512m -Xmx1536m"
+    ["AEL_ConfirmShipmentFromDAD_IS"]="-Xms512m -Xmx1536m"
+    ["AEL_AdjInvFromPOSFile_IS"]="-Xms512m -Xmx1024m"
+    ["AEL_GenerateCreditNode_IS"]="-Xms512m -Xmx1024m"
+    ["AEL_PWP_PackShipment"]="-Xms768m -Xmx1536m"
+    ["AEL_MinimaxInvoice_IS"]="-Xms512m -Xmx1024m"
+)
