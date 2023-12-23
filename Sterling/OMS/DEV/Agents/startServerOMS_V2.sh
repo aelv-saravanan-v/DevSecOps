@@ -38,9 +38,10 @@ start_server() {
   
   # Start the server using the appropriate sh script
   nohup $STERLING_DIR/bin/$script_name $server_name $jvm_heapsize > "$LOG_DIR/TD_$server_name.log" 2>&1 &
-  echo """
-  nohup $STERLING_DIR/bin/$script_name $server_name $jvm_heapsize > "$LOG_DIR/TD_$server_name.log" 2>&1 &
-  """
+  # For testing the variable values
+  # echo """
+  # nohup $STERLING_DIR/bin/$script_name $server_name $jvm_heapsize > "$LOG_DIR/TD_$server_name.log" 2>&1 &
+  # """
   sleep 14  # Adjust sleep duration as needed
 }
 
@@ -80,12 +81,21 @@ case "$1" in
     }
     # Check Java process count
     java_process_count=$(check_java_process)
-    echo """==============================================
+    echo """
+===================================================================
+*******************************************************************
 Java process count: $java_process_count
-==============================================
+*******************************************************************
+===================================================================
 """
     if [ "$java_process_count" -eq 0 ]; then
-        echo "No Java processes are running. Starting the servers..."
+        echo """
+===================================================================
+*******************************************************************
+No Java processes are running. Starting the servers
+*******************************************************************
+===================================================================
+"""
         # Start servers for "integrationserver"
         start_all_servers "integrationserver" &&
         # Start health monitor for "HealthMonitor"
@@ -93,7 +103,13 @@ Java process count: $java_process_count
         # Start servers for "agentserver"
         start_all_servers "agentserver"
     else
-        echo "Java processes are already running. Servers will not be started."
+        echo """
+===================================================================
+*******************************************************************
+Java processes are already running. Servers will not be started.
+*******************************************************************
+===================================================================
+"""
     fi
     ;;
   "Agents")
