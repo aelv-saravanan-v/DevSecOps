@@ -1,7 +1,7 @@
 #!/bin/bash
 #######################################################################################
 # Source the Server List file
-source DEVOMSagntintgServerList.sh
+source 10.0.4.42.sh
 STERLING_DIR="/opt/IBM/OMS95"
 LOG_DIR="/var/IBM/OMS95/logs"
 #######################################################################################
