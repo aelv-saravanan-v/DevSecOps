@@ -80,7 +80,10 @@ case "$1" in
     }
     # Check Java process count
     java_process_count=$(check_java_process)
-    echo "Java process count: $java_process_count"
+    echo """==============================================
+Java process count: $java_process_count
+==============================================
+"""
     if [ "$java_process_count" -eq 0 ]; then
         echo "No Java processes are running. Starting the servers..."
         # Start servers for "integrationserver"
