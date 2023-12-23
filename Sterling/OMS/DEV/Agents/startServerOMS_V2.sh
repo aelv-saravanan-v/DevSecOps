@@ -67,7 +67,7 @@ start_all_servers() {
 start_health_monitor() {
   server_name=$1
   echo "Starting Health Monitor server: $server_name"
-  nohup $STERLING_DIR/bin/startHealthMonitor.sh > "$LOG_DIR/logs/TD_$server_name.log" 2>&1 &
+  nohup $STERLING_DIR/bin/startHealthMonitor.sh > "$LOG_DIR/TD_$server_name.log" 2>&1 &
   sleep 10  # Adjust sleep duration as needed
 }
 
