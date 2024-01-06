@@ -1,9 +1,8 @@
 #!/bin/bash
 #######################################################################################
 # Source the Server List file
-source /opt/IBM/scripts/10.0.4.42.sh
-STERLING_DIR="/opt/IBM/OMS95"
-LOG_DIR="/var/IBM/OMS95/logs"
+STERLING_DIR="/opt/IBM/OMS10"
+LOG_DIR="/var/IBM/OMS10/logs"
 #######################################################################################
 if [ ! -d "$LOG_DIR" ]; then
     mkdir -p "$LOG_DIR"
@@ -42,7 +41,7 @@ start_server() {
   # echo """
   # nohup $STERLING_DIR/bin/$script_name $server_name $jvm_heapsize > "$LOG_DIR/TD_$server_name.log" 2>&1 &
   # """
-  sleep 14  # Adjust sleep duration as needed
+  sleep 12  # Adjust sleep duration as needed
 }
 
 # Function to start all servers of a given server type
@@ -98,8 +97,6 @@ No Java processes are running. Starting the servers
 """
         # Start servers for "integrationserver"
         start_all_servers "integrationserver" &&
-        # Start health monitor for "HealthMonitor"
-        start_health_monitor "HealthMonitor" &&
         # Start servers for "agentserver"
         start_all_servers "agentserver"
     else
@@ -115,15 +112,47 @@ Java processes are already running. Servers will not be started.
   "Agents")
     start_all_servers "agentserver"
     ;;
-  "Intgs")
-    start_all_servers "integrationserver"
+  "Integrations")
+    # Function to check Java process count
+    check_java_process() {
+        local count=$(pgrep -c java)
+        echo "$count"
+    }
+    # Check Java process count
+    java_process_count=$(check_java_process)
+    echo """
+===================================================================
+*******************************************************************
+Java process count: $java_process_count
+*******************************************************************
+===================================================================
+"""
+    if [ "$java_process_count" -eq 0 ]; then
+        echo """
+===================================================================
+*******************************************************************
+No Java processes are running. Starting the servers
+*******************************************************************
+===================================================================
+"""
+        # Start servers for "integrationserver"
+        start_all_servers "integrationserver"
+    else
+        echo """
+===================================================================
+*******************************************************************
+Java processes are already running. Servers will not be started.
+*******************************************************************
+===================================================================
+"""
+    fi
     ;;
   "HealthMonitor")
     start_health_monitor "HealthMonitor"
     ;;
   *)
     if [ -z "$1" ]; then
-      echo "Please provide a valid server name or 'ALL' or 'Agents' or 'Intgs' or 'HealthMonitor'"
+      echo "Please provide a valid server name or 'ALL' or 'Agents' or 'Integrations' or 'HealthMonitor'"
     else
       start_server "$1"
     fi
