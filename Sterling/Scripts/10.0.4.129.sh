@@ -54,4 +54,5 @@ declare -A integrationserver=(
     ["AEL_OrderEventServer"]="-Xms1024m -Xmx1536m"
     ["AEL_InventoryEventServer"]="-Xms768m -Xmx1024m"
     ["AEL_PackEventServer"]="-Xms768m -Xmx1024m"
+    # Add more server here as needed ["ServerName"]="JVM HeapSize"
 )
