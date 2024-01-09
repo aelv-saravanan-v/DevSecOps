@@ -82,7 +82,7 @@ case "$1" in
   "Agents")
     start_all_servers "agentserver"
     ;;
-  "Integrationserver")
+  "Integrations")
     start_all_servers "integrationserver"
     ;;
   "HealthMonitor")
@@ -90,7 +90,7 @@ case "$1" in
     ;;
   *)
     if [ -z "$1" ]; then
-      echo "Please provide a valid 'server name' or 'ALL' or 'Agents' or 'Integrationserver' or 'HealthMonitor'"
+      echo "Please provide a valid 'server name' or 'ALL' or 'Agents' or 'Integrations' or 'HealthMonitor'"
     else
       start_server "$1"
     fi
