@@ -97,6 +97,8 @@ No Java processes are running. Starting the servers
 """
         # Start servers for "integrationserver"
         start_all_servers "integrationserver" &&
+        # Start health monitor for "HealthMonitor"
+        start_health_monitor "HealthMonitor" &&
         # Start servers for "agentserver"
         start_all_servers "agentserver"
     else
@@ -112,47 +114,15 @@ Java processes are already running. Servers will not be started.
   "Agents")
     start_all_servers "agentserver"
     ;;
-  "Integrations")
-    # Function to check Java process count
-    check_java_process() {
-        local count=$(pgrep -c java)
-        echo "$count"
-    }
-    # Check Java process count
-    java_process_count=$(check_java_process)
-    echo """
-===================================================================
-*******************************************************************
-Java process count: $java_process_count
-*******************************************************************
-===================================================================
-"""
-    if [ "$java_process_count" -eq 0 ]; then
-        echo """
-===================================================================
-*******************************************************************
-No Java processes are running. Starting the servers
-*******************************************************************
-===================================================================
-"""
-        # Start servers for "integrationserver"
-        start_all_servers "integrationserver"
-    else
-        echo """
-===================================================================
-*******************************************************************
-Java processes are already running. Servers will not be started.
-*******************************************************************
-===================================================================
-"""
-    fi
+  "Intgs")
+    start_all_servers "integrationserver"
     ;;
   "HealthMonitor")
     start_health_monitor "HealthMonitor"
     ;;
   *)
     if [ -z "$1" ]; then
-      echo "Please provide a valid server name or 'ALL' or 'Agents' or 'Integrations' or 'HealthMonitor'"
+      echo "Please provide a valid server name or 'ALL' or 'Agents' or 'Intgs' or 'HealthMonitor'"
     else
       start_server "$1"
     fi
