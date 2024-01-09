@@ -1,6 +1,7 @@
 #!/bin/bash
 #######################################################################################
 # Source the Server List file
+
 STERLING_DIR="/opt/IBM/OMS10"
 LOG_DIR="/var/IBM/OMS10/logs"
 #######################################################################################
@@ -73,79 +74,17 @@ start_health_monitor() {
 
 case "$1" in
   "ALL")
-    # Function to check Java process count
-    check_java_process() {
-        local count=$(pgrep -c java)
-        echo "$count"
-    }
-    # Check Java process count
-    java_process_count=$(check_java_process)
-    echo """
-===================================================================
-*******************************************************************
-Java process count: $java_process_count
-*******************************************************************
-===================================================================
-"""
-    if [ "$java_process_count" -eq 0 ]; then
-        echo """
-===================================================================
-*******************************************************************
-No Java processes are running. Starting the servers
-*******************************************************************
-===================================================================
-"""
-        # Start servers for "integrationserver"
-        start_all_servers "integrationserver" &&
-        # Start servers for "agentserver"
-        start_all_servers "agentserver"
-    else
-        echo """
-===================================================================
-*******************************************************************
-Java processes are already running. Servers will not be started.
-*******************************************************************
-===================================================================
-"""
-    fi
+    # Start servers for "integrationserver"
+    start_all_servers "integrationserver" &&
+    # Start servers for "agentserver"
+    start_all_servers "agentserver"
     ;;
   "Agents")
     start_all_servers "agentserver"
     ;;
   "Integrations")
-    # Function to check Java process count
-    check_java_process() {
-        local count=$(pgrep -c java)
-        echo "$count"
-    }
-    # Check Java process count
-    java_process_count=$(check_java_process)
-    echo """
-===================================================================
-*******************************************************************
-Java process count: $java_process_count
-*******************************************************************
-===================================================================
-"""
-    if [ "$java_process_count" -eq 0 ]; then
-        echo """
-===================================================================
-*******************************************************************
-No Java processes are running. Starting the servers
-*******************************************************************
-===================================================================
-"""
-        # Start servers for "integrationserver"
-        start_all_servers "integrationserver"
-    else
-        echo """
-===================================================================
-*******************************************************************
-Java processes are already running. Servers will not be started.
-*******************************************************************
-===================================================================
-"""
-    fi
+    # Start servers for "integrationserver"
+    start_all_servers "integrationserver"
     ;;
   "HealthMonitor")
     start_health_monitor "HealthMonitor"
